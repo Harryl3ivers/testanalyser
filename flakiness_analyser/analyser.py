@@ -28,17 +28,19 @@ class FlakeAnalyser:
         
         for test_name, results in history.items():
             total = len(results)
+
             pattern = self.identify_patterns(results)
             failures = sum(1 for r in results if r["status"] == "failed")  
-            retries = sum(r["retries"] for r in results)
+            retries = sum((r.get("retries") or 0) for r in results)
             failure_percent = failures / total if total else 0
             retry_percent = retries / total if total else 0
             score = (failure_percent * 0.6) + (retry_percent * 0.4)
-            classification = (
-                "FLAKY" if score > 0.5 else
-                "SUSPICIOUS" if score  > 0.2 else                                             
-                "STABLE"
-            )
+            if retries > 0 and failures >0:
+                classification = "SUSPICIOUS"
+            elif failure_percent > 0.5:
+                classification = "FLAKY"
+            else:
+                classification = "STABLE"
 
             report.append({ "test": test_name,
                 "score": round(score, 3),

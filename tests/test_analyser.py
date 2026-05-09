@@ -1,5 +1,5 @@
 import pytest
-from analyser import FlakeAnalyser
+from flakiness_analyser.analyser import FlakeAnalyser
 def test_all_passed():
     runs = [
         {"results": [{"name": "test1", "status": "passed", "retries": 0}]}
@@ -32,7 +32,7 @@ def test_intermittent():
         {"status": "failed"},
         {"status": "passed"},
     ]
-    analyser = FlakeAnalyser()
+    analyser = FlakeAnalyser([{"results": results}])
     pattern  = analyser.identify_patterns(results)
     assert pattern == "INTERMITTENT"
 
@@ -40,3 +40,14 @@ def test_empty_runs():
     analyser = FlakeAnalyser([])
     report = analyser.calculate_flakiness()
     assert report == []
+
+@pytest.mark.parametrize("runs,expected_classification",[
+    ([{"results": [{"name": "test1", "status": "passed", "retries": 0}]}], "STABLE"),
+    ([{"results": [{"name": "test1", "status": "failed", "retries": 0}]}], "FLAKY"),
+    ([{"results": [{"name": "test1", "status": "passed", "retries": 0}],
+       "results": [{"name": "test1", "status": "failed", "retries": 1}]}], "SUSPICIOUS")
+])
+def test_flake_classification(runs,expected_classification):
+    analyser = FlakeAnalyser(runs)
+    report = analyser.calculate_flakiness()
+    assert report[0]["classification"] == expected_classification
