@@ -11,14 +11,18 @@ def load_json(file_path):
 
 def load_playwright_report(file_path):
     data = load_json(file_path)
-    results = []
-    for test in data.get("tests"):
-        results.append({
+    runs = []
+    for run in data.get("runs",[]):
+        results = []
+        for test in run.get("tests",[]):
+            results.append({
              "name": test["nodeid"],
             "status": test["outcome"],
             "retries": test.get("rerun")
         })
-    return [{"results": results}]
+        runs.append({"results": results})
+    return runs
+      
                  
 
 def export_csv(report,filename):

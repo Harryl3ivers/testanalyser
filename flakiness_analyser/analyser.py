@@ -35,7 +35,9 @@ class FlakeAnalyser:
             failure_percent = failures / total if total else 0
             retry_percent = retries / total if total else 0
             score = (failure_percent * 0.6) + (retry_percent * 0.4)
-            if retries > 0 and failures >0:
+            if pattern == "CONSISTENT_FAILURE":
+                classification = "CONSISTENT_FAILURE"
+            elif retries > 0 and failures >0:
                 classification = "SUSPICIOUS"
             elif failure_percent > 0.5:
                 classification = "FLAKY"
@@ -59,9 +61,3 @@ class FlakeAnalyser:
 
 
 
-            #                 if score > 0.5:
-#     classification = "FLAKY"
-# elif score > 0.2:
-#     classification = "SUSPICIOUS"
-# else:
-#     classification = "STABLE"

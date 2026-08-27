@@ -15,7 +15,7 @@ def test_all_failed():
     ]
     analyser = FlakeAnalyser(runs)
     report = analyser.calculate_flakiness()
-    assert report[0]["classification"] == "FLAKY"
+    assert report[0]["classification"] == "CONSISTENT_FAILURE"
 
 def test_mixed_results():
     runs = [
@@ -24,7 +24,7 @@ def test_mixed_results():
     ]
     analyser = FlakeAnalyser(runs)
     report = analyser.calculate_flakiness()
-    assert report[0]["classification"] in ["SUSPICIOUS","FLAKY"]
+    assert report[0]["classification"] == "SUSPICIOUS"
 
 def test_intermittent():
     results = [
@@ -43,11 +43,29 @@ def test_empty_runs():
 
 @pytest.mark.parametrize("runs,expected_classification",[
     ([{"results": [{"name": "test1", "status": "passed", "retries": 0}]}], "STABLE"),
-    ([{"results": [{"name": "test1", "status": "failed", "retries": 0}]}], "FLAKY"),
-    ([{"results": [{"name": "test1", "status": "passed", "retries": 0}],
-       "results": [{"name": "test1", "status": "failed", "retries": 1}]}], "SUSPICIOUS")
+    ([{"results": [{"name": "test1", "status": "failed", "retries": 0}]}], "CONSISTENT_FAILURE"),
+    ([
+    {"results": [{"name": "test1", "status": "passed", "retries": 0}]},
+    {"results": [{"name": "test1", "status": "failed", "retries": 1}]}
+], "SUSPICIOUS")
 ])
 def test_flake_classification(runs,expected_classification):
     analyser = FlakeAnalyser(runs)
     report = analyser.calculate_flakiness()
     assert report[0]["classification"] == expected_classification
+
+def test_flaky_test():
+    runs = [
+        {"results": [{"name": "test1", "status": "passed", "retries": 0}]},
+        {"results": [{"name": "test1", "status": "failed", "retries": 0}]},
+        {"results": [{"name": "test1", "status": "failed", "retries": 0}]},
+    ]
+
+    analyser = FlakeAnalyser(runs)
+    report = analyser.calculate_flakiness()
+
+    assert report[0]["classification"] == "FLAKY"
+
+
+# def test_50_percent_failure():
+#     pass
