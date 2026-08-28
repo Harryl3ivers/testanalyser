@@ -2,15 +2,15 @@ import subprocess
 from flakiness_analyser.analyser import FlakeAnalyser
 from flakiness_analyser.utils import load_json, load_playwright_report,export_csv
 
-ECOMMERCE_PYTEST = r"../ecommerce app/venv/Scripts/pytest.exe"
-
-subprocess.run([
-     ECOMMERCE_PYTEST,
-    "../ecommerce app/tests",
-    "--json-report",
-    "--json-report-file=reports/test_results.json"
+ECOMMERCE_PYTEST = r"../testanalyser/venv/Scripts/pytest.exe"
+for i in range(3):
+    subprocess.run([
+        ECOMMERCE_PYTEST,
+        "../testanalyser/tests",
+        "--json-report",
+        "--json-report-file=reports/test_results.json"
 ])
-runs = load_playwright_report("reports/test_results.json")
+runs = load_playwright_report(["reports/test_results.json"])
 analyser = FlakeAnalyser(runs)
 report = analyser.calculate_flakiness()
 print("\n=== FLAKINESS REPORT ===\n")

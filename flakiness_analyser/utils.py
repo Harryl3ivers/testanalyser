@@ -9,20 +9,24 @@ def load_json(file_path):
 
     return json.loads(content)
 
-def load_playwright_report(file_path):
-    data = load_json(file_path)
+def load_playwright_report(file_paths):
     runs = []
-    for run in data.get("runs",[]):
+
+    for filepath in file_paths:
+        data = load_json(filepath)
+
         results = []
-        for test in run.get("tests",[]):
+
+        for test in data.get("tests", []):
             results.append({
-             "name": test["nodeid"],
-            "status": test["outcome"],
-            "retries": test.get("rerun")
-        })
+                "name": test["nodeid"],
+                "status": test["outcome"],
+                "retries": test.get("rerun")
+            })
+
         runs.append({"results": results})
+
     return runs
-      
                  
 
 def export_csv(report,filename):
